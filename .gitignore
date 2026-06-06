@@ -1,0 +1,14 @@
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+venv/
+.env
+*.log
+logs/*.jsonl
+data/*.db
+evaluation/results/*.csv
+evaluation/results/*.json
+models/saved/*/*.joblib
+models/saved/*/metadata.json
+*.egg-info/
