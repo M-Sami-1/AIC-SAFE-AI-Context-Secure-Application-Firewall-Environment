@@ -4,6 +4,8 @@ __pycache__/
 .venv/
 venv/
 .env
+.python311/
+tools/python-*.exe
 *.log
 logs/*.jsonl
 data/*.db

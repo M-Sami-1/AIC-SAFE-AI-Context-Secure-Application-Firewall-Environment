@@ -1,6 +1,7 @@
 # Reproducibility Policy
 
 AIC-SAFE benchmarkable runs must execute inside the project-local virtual environment at `.venv`.
+The `.venv` can be created from a project-local Python interpreter at `.python311\python.exe`, keeping Python execution scoped to this repository.
 
 Supported flow:
 

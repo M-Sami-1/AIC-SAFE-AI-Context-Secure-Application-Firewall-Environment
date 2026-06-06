@@ -3,6 +3,7 @@
 ## Requirements
 
 - Python 3.11 recommended
+- Project-local Python at `.python311\python.exe` is supported
 - 6-8 GB RAM
 - No Docker required
 - Optional: Ollama with `phi3:mini`

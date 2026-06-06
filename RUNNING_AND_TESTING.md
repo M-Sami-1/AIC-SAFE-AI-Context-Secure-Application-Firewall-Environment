@@ -5,7 +5,7 @@ This guide explains how to set up, run, and verify the AIC-SAFE MVP locally.
 ## 1. Prerequisites
 
 - Windows PowerShell
-- Python 3.11 installed and available as `python`
+- Python 3.11. The project can use a local interpreter at `.python311\python.exe`.
 - Internet access for the first dependency install
 - Optional: Ollama installed with `phi3:mini`
 
@@ -213,12 +213,12 @@ scripts/setup_venv.ps1
 
 ### Python is not found
 
-Install Python 3.11 and make sure `python` is available on PATH.
+Install Python 3.11 or use the project-local `.python311\python.exe` interpreter.
 
 Check:
 
 ```powershell
-python --version
+.\.python311\python.exe --version
 ```
 
 ### Missing `.venv`

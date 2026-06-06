@@ -2,14 +2,21 @@ $ErrorActionPreference = "Stop"
 
 $ProjectRoot = Resolve-Path (Join-Path $PSScriptRoot "..")
 $VenvPython = Join-Path $ProjectRoot ".venv\Scripts\python.exe"
+$ProjectPython = Join-Path $ProjectRoot ".python311\python.exe"
 $Requirements = Join-Path $ProjectRoot "requirements.txt"
 
 if (-not (Test-Path -LiteralPath $VenvPython)) {
-    $Python = Get-Command python -ErrorAction SilentlyContinue
-    if (-not $Python) {
-        throw "Python was not found on PATH. Install Python 3.11, then rerun this script."
+    if (Test-Path -LiteralPath $ProjectPython) {
+        $PythonExe = $ProjectPython
     }
-    & $Python.Source -m venv (Join-Path $ProjectRoot ".venv")
+    else {
+        $Python = Get-Command python -ErrorAction SilentlyContinue
+        if (-not $Python) {
+            throw "Python was not found. Install Python 3.11 or place project-local Python at .python311\python.exe."
+        }
+        $PythonExe = $Python.Source
+    }
+    & $PythonExe -m venv (Join-Path $ProjectRoot ".venv")
 }
 
 & $VenvPython -m pip install --upgrade pip==24.1.2
