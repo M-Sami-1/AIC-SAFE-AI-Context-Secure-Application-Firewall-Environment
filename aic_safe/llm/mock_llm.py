@@ -4,7 +4,7 @@ import re
 
 
 class MockLLM:
-    """Deterministic fallback LLM for demos, tests, and low-resource machines."""
+    """Deterministic LLM used only when mock mode is explicitly configured."""
 
     mode = "mock"
 

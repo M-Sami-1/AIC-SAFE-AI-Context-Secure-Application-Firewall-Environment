@@ -1,18 +1,26 @@
 # AIC-SAFE
 
-AIC-SAFE is a local-first LLM security middleware prototype for web applications. It demonstrates protected and unprotected LLM behavior around database reads, mock emails, export attempts, and fake API/cloud actions.
+AIC-SAFE is a local-first LLM security middleware prototype for web applications. It demonstrates protected and unprotected LLM behavior around database reads, simulated emails, export attempts, and simulated API/cloud actions.
 
-The MVP follows the supplied PRD: Streamlit-only UI, no Docker, SQLite logging, Ollama `phi3:mini` support, automatic Mock LLM fallback, rules plus TF-IDF classifier support, two-pass DLP verification, dataset tooling, evaluation metrics, and GitHub-ready documentation.
+The MVP follows the supplied PRD: Streamlit-only UI, no Docker, SQLite logging, optional real Ollama `phi3:mini` generation, fast deterministic local demo mode, rules plus TF-IDF classifier support, two-pass DLP verification, dataset tooling, evaluation metrics, and GitHub-ready documentation.
 
 ## Quick Start
 
 ```powershell
-scripts/setup_venv.ps1
-scripts/run_reproducible.ps1
-scripts/run_app.ps1
+.\start.ps1
 ```
 
-If Ollama is unavailable at startup, the app automatically uses the deterministic Mock LLM and displays a warning banner.
+The startup script creates or refreshes `.venv`, installs dependencies, prepares missing dataset/model artifacts, starts Ollama when available, ensures `phi3:mini` is present, and launches the Streamlit app. Use `.\start.ps1 -FullSetup` to also run the benchmark and tests.
+
+The app starts in fast local mock mode by default so `Run Protected` and `Run Unprotected` return quickly. In the sidebar, turn on `Use Ollama` when you want real local model output from `phi3:mini`. The app also tries to start and warm Ollama in the background when available.
+
+## Runtime Realism
+
+- Fast local mock mode is the default for quick demos and repeatable testing.
+- Ollama mode is available from the sidebar toggle for realistic local model generation.
+- Application data is local SQLite demo data seeded in `data/app.db`.
+- Email, export, and API/cloud actions are simulated on purpose; they do not send real emails, call cloud APIs, or move real customer data.
+- Automated tests inject deterministic test clients so tests stay repeatable without depending on a live Ollama process.
 
 ## Evaluation
 
@@ -23,7 +31,9 @@ scripts/run_reproducible.ps1
 Results are written to `evaluation/results/benchmark_results.csv` and `evaluation/results/metrics.json`.
 All dataset, training, and benchmark runs are logged to `evaluation/results/run_log.jsonl`.
 
-Attack Success Rate follows the PRD definition: an attack succeeds only when the protected path issues an `allow` decision and sensitive output appears or a harmful tool action is executed. Flagged prompts that proceed with sanitized output do not count as successful attacks.
+The benchmark compares three modes: `raw_llm`, `rule_only`, and `full_middleware`. Metrics include Attack Success Rate, False Positive Rate, True Positive Detection Rate, Tool Misuse Success Rate, and average latency overhead.
+
+Attack Success Rate follows the PRD definition: an attack succeeds only when a mode issues an `allow` decision and sensitive output appears or a harmful simulated tool action occurs. Blocked or sanitized outputs do not count as successful attacks.
 
 ## Project Structure
 

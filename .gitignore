@@ -11,6 +11,7 @@ logs/*.jsonl
 data/*.db
 evaluation/results/*.csv
 evaluation/results/*.json
+evaluation/results/*.jsonl
 models/saved/*/*.joblib
 models/saved/*/metadata.json
 *.egg-info/

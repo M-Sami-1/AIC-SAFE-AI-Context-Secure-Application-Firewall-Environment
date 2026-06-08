@@ -16,6 +16,6 @@ scripts/run_reproducible.ps1
 scripts/run_app.ps1
 ```
 
-When Ollama is not reachable, `config.MODEL_SELECTION["mode"] = "auto"` switches to Mock LLM automatically and the app shows a warning banner.
+Runtime mode is `ollama` by default. When Ollama is not reachable, the app shows an error instead of silently switching to Mock LLM output. Use `config.MODEL_SELECTION["mode"] = "mock"` only for intentional deterministic demo or test runs.
 
 Dataset generation, classifier training, evaluation, and tests are intended to run only through the project `.venv`. See `docs/reproducibility.md`.

@@ -7,13 +7,39 @@ This guide explains how to set up, run, and verify the AIC-SAFE MVP locally.
 - Windows PowerShell
 - Python 3.11. The project can use a local interpreter at `.python311\python.exe`.
 - Internet access for the first dependency install
-- Optional: Ollama installed with `phi3:mini`
+- Optional for realistic app prompts: Ollama installed with `phi3:mini`
 
 Docker is not required.
 
-## 2. Create the Project Virtual Environment
+## 2. Fastest Way to Run the App
 
 From the project root:
+
+```powershell
+cd "C:\Users\S S C\Desktop\AI_Proto"
+.\start.ps1
+```
+
+This creates or refreshes `.venv`, installs dependencies, prepares missing dataset/model artifacts, starts Ollama if it is installed, warms `phi3:mini` if available, and opens the Streamlit app.
+
+The app usually opens at:
+
+```text
+http://localhost:8501
+```
+
+Use the sidebar runtime toggle:
+
+```text
+Use Ollama off: fast local mock mode
+Use Ollama on: real local Ollama mode
+```
+
+Fast local mock mode is the default and should return results in a few seconds or less. Ollama mode uses real local generation and depends on your hardware.
+
+## 3. Create Only the Project Virtual Environment
+
+If you do not want to use `start.ps1`, set up the environment manually:
 
 ```powershell
 cd "C:\Users\S S C\Desktop\AI_Proto"
@@ -22,7 +48,7 @@ scripts/setup_venv.ps1
 
 This creates `.venv`, installs pinned dependencies from `requirements.txt`, and writes `requirements.lock.txt`.
 
-## 3. Run Dataset Generation, Training, Evaluation, and Tests
+## 4. Run Dataset Generation, Training, Evaluation, and Tests
 
 Use the controlled reproducible workflow:
 
@@ -59,12 +85,12 @@ evaluation/results/run_log.jsonl
 logs/reproducible_run_*.log
 ```
 
-## 4. Run the Streamlit App
+## 5. Run the Streamlit App Manually
 
-After setup:
+After `.venv` exists, run:
 
 ```powershell
-scripts/run_app.ps1
+.\.venv\Scripts\python.exe app.py
 ```
 
 Streamlit will print a local URL, usually:
@@ -73,9 +99,32 @@ Streamlit will print a local URL, usually:
 http://localhost:8501
 ```
 
-Open that URL in your browser.
+Open that URL in your browser. The app starts in fast local mock mode unless `config.py` is changed. Turn on `Use Ollama` in the sidebar for real local model output.
 
-## 5. Verify the App Is Working
+The app attempts to start and warm Ollama automatically. To prepare Ollama yourself, run:
+
+```powershell
+ollama pull phi3:mini
+ollama serve
+```
+
+Then refresh the app and enable `Use Ollama`.
+
+`scripts/run_app.ps1` still works too, but `python app.py` is the simplest single-file launcher.
+
+## 6. Verify the App Is Working
+
+Before running checks, confirm the sidebar shows:
+
+```text
+LLM mode: mock
+```
+
+For realistic local generation, turn on `Use Ollama` and wait for the warm-up message. The sidebar should then show:
+
+```text
+LLM mode: ollama
+```
 
 ### Protected Mode Check
 
@@ -95,6 +144,7 @@ Open that URL in your browser.
 4. Expected result:
    - The app should show baseline behavior without middleware blocking.
    - Source label should be `UNPROTECTED`.
+   - LLM mode should match the sidebar toggle: `mock` or `ollama`.
 
 ### Comparison Check
 
@@ -115,7 +165,7 @@ Open that URL in your browser.
    - `UNPROTECTED`
    - risk levels
 
-## 6. Verify Logs
+## 7. Verify Logs
 
 Security events are written to:
 
@@ -144,7 +194,7 @@ output paths
 run-specific metrics
 ```
 
-## 7. Run Only Tests
+## 8. Run Only Tests
 
 After `.venv` is created:
 
@@ -158,13 +208,13 @@ Expected result:
 all tests pass
 ```
 
-## 8. Run Only the App
+## 9. Run Only the App
 
 ```powershell
-scripts/run_app.ps1
+.\.venv\Scripts\python.exe app.py
 ```
 
-## 9. Run Only the Benchmark
+## 10. Run Only the Benchmark
 
 The benchmark entry point enforces the project `.venv`. Use:
 
@@ -175,12 +225,20 @@ The benchmark entry point enforces the project `.venv`. Use:
 For a faster smoke test:
 
 ```powershell
-.\.venv\Scripts\python.exe -m evaluation.benchmark --limit 20
+.\.venv\Scripts\python.exe -m evaluation.benchmark --limit 3 --runtime-mode mock
 ```
 
-## 10. Optional Ollama Setup
+For realistic Ollama benchmark output:
 
-If Ollama is installed:
+```powershell
+.\.venv\Scripts\python.exe -m evaluation.benchmark --limit 3 --runtime-mode ollama
+```
+
+Use small limits with Ollama because each sample runs raw, rule-only, and full middleware paths.
+
+## 11. Ollama Setup
+
+For realistic local model results, install Ollama and pull the model:
 
 ```powershell
 ollama pull phi3:mini
@@ -190,12 +248,38 @@ ollama serve
 Then run:
 
 ```powershell
-scripts/run_app.ps1
+.\.venv\Scripts\python.exe app.py
 ```
 
-If Ollama is unavailable, AIC-SAFE automatically switches to the Mock LLM fallback and displays a warning banner in the app.
+Turn on `Use Ollama` in the app sidebar.
 
-## 11. Troubleshooting
+To run deterministic fast demo/test output, leave `Use Ollama` off or keep `config.py` in mock mode:
+
+```python
+MODEL_SELECTION = {
+    "mode": "mock",
+    ...
+}
+```
+
+Switch it to `"ollama"` only if you want the app to open with Ollama enabled by default.
+
+### Ollama timeout
+
+The first request can be slow while the model loads. The app starts and warms Ollama in the background, but hardware still controls generation speed. The app timeout is configured in `config.py` as:
+
+```python
+"request_timeout_seconds": 60
+```
+
+If you still see a timeout, confirm Ollama is serving and the model is installed:
+
+```powershell
+ollama list
+ollama run phi3:mini "answer in one sentence"
+```
+
+## 12. Troubleshooting
 
 ### PowerShell blocks scripts
 
@@ -239,16 +323,24 @@ Use:
 scripts/run_reproducible.ps1
 ```
 
-## 12. Recommended Reviewer Flow
+### App is still slow
+
+Check the sidebar:
+
+```text
+Use Ollama off
+```
+
+Fast local mock mode should be quick. If `Use Ollama` is on, the app is waiting on real local model generation. Ollama speed depends on model size, CPU/GPU, available RAM, and whether the model is already warm.
+
+## 13. Recommended Reviewer Flow
 
 For a complete review, run these commands in order:
 
 ```powershell
 cd "C:\Users\S S C\Desktop\AI_Proto"
 Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
-scripts/setup_venv.ps1
-scripts/run_reproducible.ps1
-scripts/run_app.ps1
+.\start.ps1 -FullSetup
 ```
 
 Then verify:
@@ -256,6 +348,8 @@ Then verify:
 ```text
 Protected Mode blocks or sanitizes attacks.
 Unprotected Mode shows baseline unsafe behavior.
+LLM mode shows mock by default for fast demos.
+Use Ollama toggle switches to real local model output when Ollama is available.
 Dashboard shows logged events.
 evaluation/results/metrics.json exists.
 evaluation/results/run_log.jsonl exists.

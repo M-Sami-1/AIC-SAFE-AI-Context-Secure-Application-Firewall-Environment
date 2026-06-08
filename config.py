@@ -21,10 +21,14 @@ SECURITY_DB_PATH = DATA_DIR / "security_events.db"
 JSONL_LOG_PATH = LOG_DIR / "security_events.jsonl"
 
 MODEL_SELECTION = {
-    "mode": "auto",  # auto | ollama | mock
+    "mode": "mock",  # mock for fast demos; use ollama for real local model output
     "ollama_model": "phi3:mini",
     "ollama_url": "http://localhost:11434",
-    "request_timeout_seconds": 25,
+    "request_timeout_seconds": 60,
+    "warmup_timeout_seconds": 60,
+    "num_predict": 128,
+    "keep_alive": "10m",
+    "warmup_prompt": "Reply with exactly: AIC-SAFE warmup ready.",
 }
 
 RISK_THRESHOLDS = {

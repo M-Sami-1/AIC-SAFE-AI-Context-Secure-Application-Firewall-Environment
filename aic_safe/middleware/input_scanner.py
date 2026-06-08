@@ -58,9 +58,13 @@ SUSPICIOUS_PATTERNS = [
 
 
 class PromptSafetyScanner:
-    def __init__(self, classifier_version: str | None = None) -> None:
+    def __init__(self, classifier_version: str | None = None, use_classifier: bool = True) -> None:
         self.classifier_version = classifier_version or config.DEFAULT_CLASSIFIER_VERSION
-        self._classifier = self._load_classifier(config.CLASSIFIER_PATHS.get(self.classifier_version))
+        self._classifier = (
+            self._load_classifier(config.CLASSIFIER_PATHS.get(self.classifier_version))
+            if use_classifier
+            else None
+        )
 
     @staticmethod
     def _load_classifier(path: Path | None):
